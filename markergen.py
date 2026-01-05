@@ -360,7 +360,10 @@ def make_track_list(info_list, min_interval, max_tracks):
             # 内层循环：寻找可用轨道
             while True:
                 marker_list = marker_list_dic.get(track, [])
-                last_end_time = marker_list[-1].get_cast_end_time() if marker_list else 0
+                if not marker_list:
+                    found_track = True
+                    break # 找到了位置，执行插入
+                last_end_time = marker_list[-1].get_cast_end_time()
                 
                 # 检查是否满足当前间隔
                 if marker.time - last_end_time >= current_interval:
@@ -385,7 +388,6 @@ def make_track_list(info_list, min_interval, max_tracks):
                     marker_list_dic[track] = []
                 marker_list_dic[track].append(marker)
                 break 
-            
             else:
                 current_interval = max(current_interval - 100, MIN_INTERVAL_FLOOR)
 
@@ -469,3 +471,4 @@ def generate_final_json(cast_list, untarget_list, user_config):
     }
 
     return result_json
+

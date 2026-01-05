@@ -208,14 +208,20 @@ def get_untargetable_list(fight, config, time_offset):
     events_list = []
 
     filter_exp = 'type="targetabilityupdate"'
-    summary_url = f"{SUMMARY_URL_PREFIX}{config.logs_id}?start={fight.start_time}&end={fight.end_time}&filter={filter_exp}&api_key={config.api_key}{config.translate_param}"
-    
+    summary_url = f"{SUMMARY_URL_PREFIX}{config.logs_id}?start={fight.start_time}&end={fight.end_time}&hostility=1&filter={filter_exp}&api_key={config.api_key}{config.translate_param}"
     # 允许这里失败抛出异常
     resp = requests.get(summary_url, timeout=10)
     resp.raise_for_status()
     summary_data = resp.json()
     for e in summary_data.get('events', []):
+        src = e.get('source')
+        tgt = e.get('target')
+        if isinstance(src, dict) and src.get('type') == 'NPC': continue 
+        if isinstance(tgt, dict) and tgt.get('type') == 'NPC': continue
+        if e.get('sourceIsFriendly',False): continue    
+        
         if 'targetable' in e:
+            
             val = 1 if e['targetable'] == 1 else -1
             events_list.append({
                 'timestamp': e['timestamp'], 'type': 'targetability', 'val': val,
@@ -293,12 +299,7 @@ def get_untargetable_list(fight, config, time_offset):
 
     for event in events_list:
         prev_count = count
-        if event['type'] == 'targetability': count += event['val']
-        elif event['type'] == 'overkill':
-            t_id = event['targetID']
-            if t_id not in dead_units:
-                count += event['val']
-                dead_units.add(t_id)
+        count += event['val']
         if count < 0: count = 0
             
         if prev_count > 0 and count == 0:

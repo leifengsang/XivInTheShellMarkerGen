@@ -207,7 +207,7 @@ class Application(tk.Tk):
             pass
 
         self.translate_var = tk.BooleanVar(value=False)
-        tk.Checkbutton(self, text="请求时自动翻译 (&translate=true)", variable=self.translate_var).pack(anchor='w',
+        tk.Checkbutton(self, text="请求时自动翻译 (&translate=true)[只能翻译成英文]", variable=self.translate_var).pack(anchor='w',
                                                                                                         **padding)
 
         self.btn_generate = tk.Button(self, text="获取数据并配置...", command=self.on_process_start, bg="#dddddd")
